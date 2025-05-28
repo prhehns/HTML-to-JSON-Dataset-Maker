@@ -41,13 +41,16 @@ function showCurrentElement() {
   previewFrame.srcdoc = `
     <html>
       <head>
-        <link href="https://cdn.tailwindcss.com" rel="stylesheet">
-        <style> body { padding: 1rem; } </style>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>body { padding: 1rem; }</style>
       </head>
-      <body>${wrapper.innerHTML}</body>
+      <body class="bg-white">
+        ${wrapper.innerHTML}
+      </body>
     </html>
   `;
 }
+
 
 function assignLabel(label) {
   if (!label || currentIndex >= elementList.length) return;
@@ -65,25 +68,43 @@ function assignLabel(label) {
 }
 
 function extractElementData(el) {
+  const attributes = Object.fromEntries(
+    [...el.attributes].filter(attr => attr.value && attr.value !== 'null' && attr.value !== 'undefined')
+                     .map(attr => [attr.name, attr.value])
+  );
+
+  const styles = getComputedStyleAsArray(el).filter(
+    style => style && !style.includes('N/A') && !style.includes('undefined') && !style.includes('null')
+  );
+
+  const children = [...el.children].map(c => extractElementData(c)).filter(Boolean);
+
   return {
     type: el.tagName.toLowerCase(),
-    attributes: Object.fromEntries([...el.attributes].map(attr => [attr.name, attr.value])),
+    ...(Object.keys(attributes).length && { attributes }),
     name: el.getAttribute('class') || el.tagName.toLowerCase(),
-    children: [...el.children].map(c => extractElementData(c)),
-    styles: getComputedStyleAsArray(el)
+    ...(children.length && { children }),
+    ...(styles.length && { styles })
   };
 }
 
+
 function getComputedStyleAsArray(el) {
-  return [
-    `color: ${el.style.color || 'N/A'}`,
-    `background-color: ${el.style.backgroundColor || 'N/A'}`,
-    `font-size: ${el.style.fontSize || 'N/A'}`,
-    `padding: ${el.style.padding || 'N/A'}`,
-    `margin: ${el.style.margin || 'N/A'}`,
-    `border: ${el.style.border || 'N/A'}`
-  ];
+  const styles = [];
+
+  const style = window.getComputedStyle(el);
+  const props = ['color', 'background-color', 'font-size', 'padding', 'margin', 'border'];
+
+  props.forEach(prop => {
+    const val = style.getPropertyValue(prop);
+    if (val && val.trim() && val !== 'N/A' && val !== 'none') {
+      styles.push(`${prop}: ${val.trim()}`);
+    }
+  });
+
+  return styles;
 }
+
 
 function showNextElement() {
   currentIndex++;
