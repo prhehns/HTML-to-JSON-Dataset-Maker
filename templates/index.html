@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Component Labeling Tool</title>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 p-6">
+<h2 class="text-2xl font-bold mb-4">Component Labeling App</h2>
+<div class="grid grid-cols-2 gap-6">
+    <div>
+        <h3 class="text-lg font-semibold mb-2">HTML Input</h3>
+        <textarea id="htmlInput" class="w-full h-64 p-3 border border-gray-300 rounded"></textarea>
+        <button onclick="parseHTMLAndStart()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded">Start Labeling
+        </button>
+        <div class="mt-4 space-x-2">
+            <button id="undoBtn" class="bg-yellow-400 text-black px-3 py-1 rounded">Undo</button>
+            <button id="redoBtn" class="bg-purple-400 text-white px-3 py-1 rounded">Redo</button>
+            <button id="submitBtn" class="bg-green-600 text-white px-3 py-1 rounded">Submit</button>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="text-lg font-semibold mb-2">Component Preview</h3>
+        <div class="w-full aspect-video border rounded bg-white mb-2">
+            <iframe id="previewFrame" class="w-full h-full" style="border: none;"></iframe>
+        </div>
+        <h4 class="text-md font-medium mb-2">Choose Label:</h4>
+        <div id="labelButtons" class="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto mb-4">
+            {% for label in labels %}
+            <button
+                    onclick="assignLabel('{{ label }}')"
+                    class="bg-gray-200 hover:bg-blue-500 hover:text-white text-sm px-3 py-2 rounded transition"
+            >
+                {{ label }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <button id="nextBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">Skip / Next</button>
+    </div>
+</div>
+</body>
+</html>
