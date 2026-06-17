@@ -1,6 +1,9 @@
-# Full synthetic UI dataset generation for uncommon labels
-# This generates realistic DOM-like trees for uncommon UI components
-# and saves them as JSON and JSONL for training use.
+"""Generate synthetic records for uncommon UI component labels.
+
+The generated records are realistic DOM-like trees for UI types that may be
+underrepresented in manually labeled data. Outputs are written as both JSON and
+JSONL so they can be consumed by different training pipelines.
+"""
 
 import json
 import random
@@ -26,12 +29,17 @@ UNCOMMON_LABELS = {
 }
 
 def cls(*names):
+    """Join CSS class tokens into the string format used by node attributes."""
     return " ".join(names)
 
+
 def text(options):
+    """Choose one text value from a list of copy variants."""
     return random.choice(options)
 
+
 def synthetic(label):
+    """Build one synthetic ``{label, contents}`` record for the requested label."""
     if label == "Toast":
         return {
             "label": "Toast",
@@ -192,17 +200,23 @@ def synthetic(label):
             }]
         }
 
-records = []
+def main():
+    """Generate all configured uncommon-label records and write output files."""
+    records = []
 
-for label, count in UNCOMMON_LABELS.items():
-    for _ in range(count):
-        records.append(synthetic(label))
+    for label, count in UNCOMMON_LABELS.items():
+        for _ in range(count):
+            records.append(synthetic(label))
 
-with OUT_JSON.open("w",encoding="utf-8") as f:
-    json.dump(records,f,indent=2)
+    with OUT_JSON.open("w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2)
 
-with OUT_JSONL.open("w",encoding="utf-8") as f:
-    for r in records:
-        f.write(json.dumps(r)+"\n")
+    with OUT_JSONL.open("w", encoding="utf-8") as f:
+        for r in records:
+            f.write(json.dumps(r) + "\n")
 
-(len(records), OUT_JSON.resolve(), OUT_JSONL.resolve())
+    print(len(records), OUT_JSON.resolve(), OUT_JSONL.resolve())
+
+
+if __name__ == "__main__":
+    main()

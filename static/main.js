@@ -1,8 +1,10 @@
+// Parsed DOM elements awaiting review in the labeling workflow.
 let elementList = [];
 let currentIndex = 0;
 let labelHistory = [];
 let redoStack = [];
 
+// Wire UI controls after the labeling page has loaded.
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('htmlInput').addEventListener('input', resetState);
   document.getElementById('nextBtn').addEventListener('click', showNextElement);
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('submitBtn').addEventListener('click', submitLabels);
 });
 
+/** Reset in-memory labeling progress whenever the source HTML changes. */
 function resetState() {
   elementList = [];
   currentIndex = 0;
@@ -19,6 +22,7 @@ function resetState() {
   document.getElementById('previewFrame').srcdoc = '';
 }
 
+/** Parse textarea HTML and begin reviewing each element in document order. */
 function parseHTMLAndStart() {
   const html = document.getElementById('htmlInput').value;
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -27,6 +31,7 @@ function parseHTMLAndStart() {
   showCurrentElement();
 }
 
+/** Render the current element in an isolated iframe preview. */
 function showCurrentElement() {
   if (currentIndex >= elementList.length) {
     alert("All components labeled.");
@@ -52,6 +57,7 @@ function showCurrentElement() {
 }
 
 
+/** Save the selected label for the current element and advance the cursor. */
 function assignLabel(label) {
   if (!label || currentIndex >= elementList.length) return;
 
@@ -67,6 +73,7 @@ function assignLabel(label) {
   showCurrentElement();
 }
 
+/** Convert a live DOM element into the dataset's serializable node shape. */
 function extractElementData(el) {
   const attributes = Object.fromEntries(
     [...el.attributes].filter(attr => attr.value && attr.value !== 'null' && attr.value !== 'undefined')
@@ -89,6 +96,7 @@ function extractElementData(el) {
 }
 
 
+/** Capture a compact subset of computed styles that may help model training. */
 function getComputedStyleAsArray(el) {
   const styles = [];
 
@@ -106,11 +114,13 @@ function getComputedStyleAsArray(el) {
 }
 
 
+/** Skip the current element without adding a labeled record. */
 function showNextElement() {
   currentIndex++;
   showCurrentElement();
 }
 
+/** Remove the most recent label assignment and revisit that element. */
 function undo() {
   if (labelHistory.length === 0) return;
   const last = labelHistory.pop();
@@ -119,6 +129,7 @@ function undo() {
   showCurrentElement();
 }
 
+/** Reapply the most recently undone label assignment. */
 function redo() {
   if (redoStack.length === 0) return;
   const redoItem = redoStack.pop();
@@ -127,6 +138,7 @@ function redo() {
   showCurrentElement();
 }
 
+/** Send all labeled records to Flask for persistence as JSON. */
 function submitLabels() {
   fetch('/submit', {
     method: 'POST',
