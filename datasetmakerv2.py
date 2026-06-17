@@ -1,9 +1,20 @@
+"""Generate strict Tailwind-style UI component records.
+
+This script creates DOM-like JSON trees for a focused set of common interface
+labels. Generated nodes keep their ``name`` field synchronized with their CSS
+``class`` value, which is useful when training models that rely on class-token
+features.
+"""
+
 import json
 import random
 
 
 class UIStrictAugmenter:
+    """Factory for randomized Tailwind-flavored UI component examples."""
+
     def __init__(self):
+        """Configure target labels and reusable visual variation pools."""
         self.labels = [
             'DropdownMenu', 'SearchBar', 'RangeSlider', 'Card',
             'ImageGallery', 'Link', 'NavigationBar', 'Table',
@@ -88,6 +99,7 @@ class UIStrictAugmenter:
         return self._create_node(tag_map.get(label, 'div'), [f"ui-{label.lower()}", random.choice(self.colors)])
 
     def generate_batch(self, count=20):
+        """Generate ``count`` records for each configured label."""
         dataset = []
         for label in self.labels:
             for _ in range(count):
@@ -98,9 +110,17 @@ class UIStrictAugmenter:
         return dataset
 
 
-# --- Output ---
-augmenter = UIStrictAugmenter()
-final_data = augmenter.generate_batch(500)  # 120 total samples
 
-with open('tailwind_labeled_data.json', 'w') as f:
-    json.dump(final_data, f, indent=2)
+def main():
+    """Write the generated Tailwind-style dataset to disk."""
+    augmenter = UIStrictAugmenter()
+    final_data = augmenter.generate_batch(500)
+
+    with open('tailwind_labeled_data.json', 'w', encoding='utf-8') as f:
+        json.dump(final_data, f, indent=2)
+
+    print(len(final_data), 'tailwind_labeled_data.json')
+
+
+if __name__ == '__main__':
+    main()
